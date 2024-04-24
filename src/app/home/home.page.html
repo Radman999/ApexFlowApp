@@ -1,0 +1,28 @@
+<ion-header [hidden]="scanActive">
+  <ion-toolbar color="danger">
+    <ion-title>
+      <div>Mozzon Scan Live1</div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [style.--background]="scanActive ? '#00000000':'#ffff9f'">
+  <div class="ion-text-center">
+    <ion-button (click)="startScan()" [hidden]="scanActive">
+      <ion-icon name="barcode-Outline" slot="start"></ion-icon>
+      Start scan
+    </ion-button>
+  </div>
+
+  <div id="container">
+    <p class="ion-text-center" *ngIf="scannedresult && !scanActive">
+      {{ result }}
+    </p>
+  </div>
+
+  <ion-row class="scanner-buttons" [hidden]="!scanActive">
+    <ion-col class="ion-no-padding">
+      <ion-button expand="full" (click)="stopScanner()">stop</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>
