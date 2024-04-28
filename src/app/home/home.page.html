@@ -1,28 +1,100 @@
-<ion-header [hidden]="scanActive">
-  <ion-toolbar color="danger">
-    <ion-title>
-      <div>Mozzon Scan Live1</div>
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
 
+
+
+<ion-app>
+  <ion-menu contentId="main-content">
+    <ion-header>
+      <ion-toolbar color="danger">
+        <ion-title>Menu Content</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">This is the menu content.</ion-content>
+  </ion-menu>
+  <div class="ion-page" id="main-content">
+    <ion-header>
+      <ion-toolbar color="danger">
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Apex Flow</ion-title>
+      </ion-toolbar>
+    </ion-header>
 <ion-content [style.--background]="scanActive ? '#00000000':'#ffff9f'">
   <div class="ion-text-center">
     <ion-button (click)="startScan()" [hidden]="scanActive">
-      <ion-icon name="barcode-Outline" slot="start"></ion-icon>
-      Start scan
+      <ion-icon name="barcode-outline" slot="start"></ion-icon>
+      Start Scan
     </ion-button>
   </div>
 
-  <div id="container">
-    <p class="ion-text-center" *ngIf="scannedresult && !scanActive">
-      {{ result }}
-    </p>
+  <!-- Container for showing the form and the scanned results -->
+  <div id="container" *ngIf="scannedresult && !scanActive">
+    <!-- Form to input and submit From, To, and Quantity -->
+    <form [formGroup]="form" (ngSubmit)="submitForm()">
+  <ion-item>
+    <ion-label position="floating">From</ion-label>
+    <ion-input type="number" formControlName="From"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">To</ion-label>
+    <ion-input type="number" formControlName="To"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Quantity</ion-label>
+    <ion-input type="number" formControlName="quantity"></ion-input>
+  </ion-item>
+  <ion-button type="submit" expand="full" [disabled]="!form.valid">Submit</ion-button>
+</form>
+    
+    <!-- List of items from API Data -->
+    <!-- <ion-card *ngFor="let item of apiData">
+      <ion-card-header>
+        <ion-card-title>{{ item.wh }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        الكمية: {{ item.quantity }}
+      </ion-card-content>
+    </ion-card> -->
   </div>
 
   <ion-row class="scanner-buttons" [hidden]="!scanActive">
     <ion-col class="ion-no-padding">
-      <ion-button expand="full" (click)="stopScanner()">stop</ion-button>
+      <ion-button expand="full" (click)="stopScanner()">Stop Scan</ion-button>
     </ion-col>
   </ion-row>
 </ion-content>
+
+
+<ion-list>
+  <ion-item>
+    <ion-label>Warehouse</ion-label>
+    <ion-select [interfaceOptions]="customPopoverOptions" interface="popover" placeholder="Select Warehouse">
+      <ion-select-option *ngFor="let wh of whList" [value]="wh.id">
+        {{ wh.name }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+    <ion-item>
+    <ion-select label="Porducts" [interfaceOptions]="customPopoverOptions" interface="popover" placeholder="Select One">
+      <ion-select-option  *ngFor="let pr of ProductList" [value]="pr.id">
+        {{ pr.name }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+</ion-list>
+
+<!-- <div id="container">
+  <p class="ion-text-center" *ngIf="scannedresult && !scanActive">
+    {{ result }}
+  </p>
+  New element to display API data
+  <div *ngIf="apiData && !scanActive" class="ion-text-center">
+    <p>API Response:</p>
+    <ul>
+      <li *ngFor="let item of apiData">
+        Id: {{ item.id }}, Name: {{ item.name }}, Active: {{ item.is_active }}, Category: {{ item.category }}
+      </li>
+    </ul>
+  </div>
+</div> -->
