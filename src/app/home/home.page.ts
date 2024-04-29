@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, OnDestroy, } from '@angular/core';
-import { IonSelectOption, IonSelect, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, IonItem, IonLabel, IonInput, IonList, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonCardSubtitle, IonApp, IonButtons, IonMenu, IonMenuButton } from '@ionic/angular/standalone';
+import { IonSelectOption, IonSelect, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, IonItem, IonLabel, IonInput, IonList, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonCardSubtitle, IonApp, IonButtons, IonMenu, IonMenuButton, IonRange } from '@ionic/angular/standalone';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { addIcons } from 'ionicons';
 import { barcodeOutline } from 'ionicons/icons';
@@ -7,22 +7,25 @@ import { CommonModule } from '@angular/common';
 import { AlertController } from '@ionic/angular';
 import { HttpClientModule, HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormGroup, Validators, FormControl } from '@angular/forms';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonMenu, IonButtons, IonApp, IonSelectOption, IonSelect, IonCardSubtitle, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonList, CommonModule, HttpClientModule, IonInput, IonLabel, IonItem, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, ReactiveFormsModule, IonMenuButton],
+  imports: [IonMenu, IonButtons, IonApp, IonSelectOption, IonSelect, IonCardSubtitle, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonList, CommonModule, HttpClientModule, IonInput, IonLabel, IonItem, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, ReactiveFormsModule, IonMenuButton, IonRange],
 })
 export class HomePage implements AfterViewInit {
   form: FormGroup;
+  selectableFrom: { displayText: string, value: number }[] = [];
+  maxQuantity: number = 0;  // Default to 1 or a sensible minimum
   constructor(private alertController: AlertController, private httpClient: HttpClient, private fb: FormBuilder) {
     addIcons({ barcodeOutline });
+
     this.form = this.fb.group({
       From: [null, [Validators.required, Validators.pattern('^[0-9]+$')]],
       To: [null, [Validators.required, Validators.pattern('^[0-9]+$')]],
-      quantity: [null, [Validators.required, Validators.pattern('^[0-9]+$'), Validators.min(1)]]
+      quantity: new FormControl(1, [Validators.required, Validators.min(1), Validators.max(100)])
     });
 
 
@@ -54,9 +57,19 @@ export class HomePage implements AfterViewInit {
   };
 
 
+  onQuantityInput(event: CustomEvent) {
+    const inputValue = event.detail.value;
+    this.form.controls['quantity'].setValue(inputValue, { emitEvent: false });
+  }
 
+  onQuantityChange(event: CustomEvent) {
+    const rangeValue = event.detail.value;
+    this.form.controls['quantity'].setValue(rangeValue, { emitEvent: false });
+  }
 
-
+  quantityOptions(): number[] {
+    return Array.from({ length: this.maxQuantity }, (_, i) => i + 1);
+  }
   startScan = async () => {
     // Check camera permission
     // This is just a simple example, check out the better checks below
@@ -96,33 +109,41 @@ export class HomePage implements AfterViewInit {
       'Content-Type': 'application/json'
     });
 
-    if (this.scannedresult) {
-      this.httpClient.get<any[]>(this.scannedresult, { headers }).subscribe(
-        data => {
-          this.apiData = data;
-          console.log('API Data:', data);
-          if (data.length > 0) {
-            // Assuming the data array contains items with an id property
-            this.form.patchValue({
-              From: data[0].id,  // Example: set 'From' to the id of the first item
-              To: data[data.length - 1].id // Example: set 'To' to the id of the last item
-            });
-          }
-        },
-        error => {
-          console.error('Error fetching data:', error);
+    this.httpClient.get<any>(this.scannedresult, { headers }).subscribe(
+      data => {
+        this.apiData = data;
+        console.log('API Data:', data);
+        if (data) {
+          this.selectableFrom = [{
+            displayText: `${data.wh_name}: ${data.productunit_name}  الكمية:${data.quantity}`,
+            value: data.id
+          }];
+          this.maxQuantity = data.quantity; // Assume data.quantity is the maximum quantity allowed
+          // Update the form validators for quantity
+          this.form.controls['quantity'].setValidators([
+            Validators.required,
+            Validators.min(1),
+            Validators.max(this.maxQuantity) // Set the new maximum based on fetched data
+          ]);
+          this.form.controls['quantity'].updateValueAndValidity(); // Re-validate the form control
+          // Set default values if necessary
+          this.form.patchValue({
+            From: data.id,
+            quantity: Math.min(data.quantity, this.form.value.quantity) // Set to current or max if current exceeds new max
+          });
         }
-      );
-    } else {
-      console.error('No valid URL scanned');
-    }
+      },
+      error => {
+        console.error('Error fetching data:', error);
+      }
+    );
   }
+
 
   submitForm() {
     if (this.form.valid) {
       console.log('Form Values:', this.form.value);
       this.postApiData();
-      // Additional logic to use form data
     }
   }
 
