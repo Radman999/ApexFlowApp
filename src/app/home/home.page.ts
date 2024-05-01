@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, OnDestroy, } from '@angular/core';
-import { IonSelectOption, IonSelect, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, IonItem, IonLabel, IonInput, IonList, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonCardSubtitle, IonApp, IonButtons, IonMenu, IonMenuButton, IonRange } from '@ionic/angular/standalone';
+import { IonSelectOption, IonSelect, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, IonItem, IonLabel, IonInput, IonList, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonCardSubtitle, IonApp, IonButtons, IonMenu, IonMenuButton, IonRange, IonGrid } from '@ionic/angular/standalone';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { addIcons } from 'ionicons';
 import { barcodeOutline } from 'ionicons/icons';
@@ -13,10 +13,11 @@ import { FormBuilder, ReactiveFormsModule, FormGroup, Validators, FormControl } 
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonMenu, IonButtons, IonApp, IonSelectOption, IonSelect, IonCardSubtitle, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonList, CommonModule, HttpClientModule, IonInput, IonLabel, IonItem, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, ReactiveFormsModule, IonMenuButton, IonRange],
+  imports: [IonGrid, IonMenu, IonButtons, IonApp, IonSelectOption, IonSelect, IonCardSubtitle, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonList, CommonModule, HttpClientModule, IonInput, IonLabel, IonItem, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, ReactiveFormsModule, IonMenuButton, IonRange],
 })
 export class HomePage implements AfterViewInit {
   form: FormGroup;
+  scanResults: any[] = []; // Array to hold results from each scan
   selectableFrom: { displayText: string, value: number }[] = [];
   maxQuantity: number = 0;  // Default to 1 or a sensible minimum
   constructor(private alertController: AlertController, private httpClient: HttpClient, private fb: FormBuilder) {
@@ -25,7 +26,7 @@ export class HomePage implements AfterViewInit {
     this.form = this.fb.group({
       From: [null, [Validators.required, Validators.pattern('^[0-9]+$')]],
       To: [null, [Validators.required, Validators.pattern('^[0-9]+$')]],
-      quantity: new FormControl(1, [Validators.required, Validators.min(1), Validators.max(100)])
+      quantity: new FormControl(1, [Validators.required, Validators.min(1), Validators.max(0)])
     });
 
 
@@ -52,6 +53,7 @@ export class HomePage implements AfterViewInit {
   quantity: any;
   whList: any[] = [];
   ProductList: any[] = [];
+  product: any;
   prepare = () => {
     BarcodeScanner.prepare();
   };
@@ -66,7 +68,7 @@ export class HomePage implements AfterViewInit {
     const rangeValue = event.detail.value;
     this.form.controls['quantity'].setValue(rangeValue, { emitEvent: false });
   }
-
+  // To be deleted
   quantityOptions(): number[] {
     return Array.from({ length: this.maxQuantity }, (_, i) => i + 1);
   }
@@ -118,6 +120,8 @@ export class HomePage implements AfterViewInit {
             displayText: `${data.wh_name}: ${data.productunit_name}  الكمية:${data.quantity}`,
             value: data.id
           }];
+          this.scanResults.push(data); // Push each new scan result into the array
+          this.product = data.productunit_name;
           this.maxQuantity = data.quantity; // Assume data.quantity is the maximum quantity allowed
           // Update the form validators for quantity
           this.form.controls['quantity'].setValidators([
@@ -212,7 +216,7 @@ export class HomePage implements AfterViewInit {
           message: 'يرجى السماح للتطبيق بالوصول إلى الكاميرا لتمكين المسح الضوئي.',
           buttons: [{
             text: 'رفض',
-            role: 'cancel',
+            role: 'إلغاء',
           },
           {
             text: 'فتح الإعدادات',
