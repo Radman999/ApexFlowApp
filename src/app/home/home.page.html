@@ -1,52 +1,79 @@
-<!-- <ion-header [hidden]="scanActive">
-  <ion-toolbar color="danger">
-    <ion-title>
-      <div>Mozzon Scan Live3</div>
-    </ion-title>
-  </ion-toolbar>
-</ion-header> -->
-
-<ion-app>
-  <ion-menu contentId="main-content" [hidden]="scanActive">
+<ion-app [hidden]="scanActive">
+  <ion-menu contentId="main-content">
     <ion-header>
-      <ion-toolbar color="danger">
+      <ion-toolbar color="primary">
         <ion-title>Menu Content</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content
       class="ion-padding"
       [style.--background]="scanActive ? '#00000000':'#000000'"
-      >This is the menu content.</ion-content
-    >
+      >This is the menu content.
+    </ion-content>
   </ion-menu>
   <div class="ion-page" id="main-content">
-    <ion-header [hidden]="scanActive">
-      <ion-toolbar color="danger">
+    <ion-header>
+      <ion-toolbar color="primary">
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>
         </ion-buttons>
         <ion-title>Menu</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content [style.--background]="scanActive ? '#00000000':'#ffffff'">
+    <ion-content
+      [style.--background]="scanActive ? '#00000000':'#ffffff'"
+      class="page-content"
+    >
       <div class="ion-text-center">
-        <ion-button (click)="startScan()" [hidden]="scanActive">
-          <ion-icon name="barcode-outline" slot="start"></ion-icon>
-          Start Scan
-        </ion-button>
-      </div>
-
-      <ion-row class="scanner-buttons" [hidden]="!scanActive">
-        <ion-col class="ion-no-padding">
-          <ion-button expand="full" (click)="stopScanner()"
-            >Stop Scan</ion-button
+        <ion-list>
+          <ion-item>
+            <ion-input
+              labelPlacement="stacked"
+              label="QR"
+              placeholder="QR id"
+              [value]="result"
+            >
+              <ion-icon
+                slot="start"
+                name="lock-closed"
+                aria-hidden="true"
+              ></ion-icon>
+              <ion-button
+                (click)="startScan()"
+                color="secondary"
+                fill="clear"
+                slot="end"
+                aria-label="Show/hide"
+              >
+                <ion-icon
+                  slot="icon-only"
+                  name="barcode-outline"
+                  aria-hidden="true"
+                ></ion-icon>
+              </ion-button>
+            </ion-input>
+          </ion-item>
+        </ion-list>
+        <div class="card-container">
+          <ion-card
+            color="primary"
+            class="custom-card"
+            *ngFor="let result of scanResults"
           >
-        </ion-col>
-      </ion-row>
+            <ion-card-header>
+              <ion-card-title>{{ result.productunit_name }}</ion-card-title>
+              <ion-card-subtitle
+                >أنشئ: {{ result.created_at }}</ion-card-subtitle
+              >
+            </ion-card-header>
+            <ion-card-content> الكمية: {{ result.quantity }} </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
     </ion-content>
-    <div [hidden]="scanActive">
-      <form [formGroup]="form" (ngSubmit)="submitForm()">
-        <ion-item>
+    <div>
+      <!-- <form [formGroup]="form" (ngSubmit)="submitForm()" id="container">
+        <ion-item lines="none">
           <ion-label position="floating">From</ion-label>
           <ion-select
             formControlName="From"
@@ -62,8 +89,8 @@
           </ion-select>
         </ion-item>
 
-        <!-- Updated To field with ion-select -->
-        <ion-item>
+        Updated To field with ion-select
+        <ion-item lines="none">
           <ion-label position="floating">To</ion-label>
           <ion-select
             formControlName="To"
@@ -76,7 +103,7 @@
           </ion-select>
         </ion-item>
 
-        <!-- Updated Quantity field with both ion-input and ion-range -->
+        Updated Quantity field with both ion-input and ion-range
         <ion-item>
           <ion-label position="floating">Quantity</ion-label>
           <ion-input
@@ -90,12 +117,17 @@
           <span class="max-quantity">Max: {{ maxQuantity }}</span>
         </ion-item>
 
-        <ion-button type="submit" expand="full" [disabled]="!form.valid">
+        <ion-button
+          type="submit"
+          expand="full"
+          color="success"
+          [disabled]="!form.valid"
+        >
           Submit
         </ion-button>
-      </form>
+      </form> -->
     </div>
-    <!-- <div [hidden]="scanActive">
+    <!-- <div>
       <ion-list>
         <ion-item>
           <ion-label>إلى</ion-label>
@@ -124,5 +156,21 @@
         </ion-item>
       </ion-list>
     </div> -->
+    <ion-button
+      type="submit"
+      expand="full"
+      color="success"
+      [disabled]="!form.valid"
+    >
+      Submit
+    </ion-button>
   </div>
 </ion-app>
+
+<ion-row class="scanner-buttons" [hidden]="!scanActive">
+  <ion-col class="ion-no-padding">
+    <ion-button expand="full" (click)="stopScanner()" color="danger"
+      >Stop Scan</ion-button
+    >
+  </ion-col>
+</ion-row>
