@@ -1,35 +1,31 @@
-import { AfterViewInit, Component, OnDestroy, } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, } from '@angular/core';
 import { IonSelectOption, IonSelect, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, IonItem, IonLabel, IonInput, IonList, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonCardSubtitle, IonApp, IonButtons, IonMenu, IonMenuButton, IonRange, IonGrid } from '@ionic/angular/standalone';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { addIcons } from 'ionicons';
-import { barcodeOutline } from 'ionicons/icons';
+import { barcodeOutline, search } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
 import { AlertController } from '@ionic/angular';
 import { HttpClientModule, HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { FormBuilder, ReactiveFormsModule, FormGroup, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormGroup, Validators, FormControl, FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonGrid, IonMenu, IonButtons, IonApp, IonSelectOption, IonSelect, IonCardSubtitle, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonList, CommonModule, HttpClientModule, IonInput, IonLabel, IonItem, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, ReactiveFormsModule, IonMenuButton, IonRange],
+  imports: [FormsModule, IonGrid, IonMenu, IonButtons, IonApp, IonSelectOption, IonSelect, IonCardSubtitle, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonList, CommonModule, HttpClientModule, IonInput, IonLabel, IonItem, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonRow, IonCol, ReactiveFormsModule, IonMenuButton, IonRange],
 })
-export class HomePage implements AfterViewInit {
-  form: FormGroup;
-  scanResults: any[] = []; // Array to hold results from each scan
+export class HomePage implements AfterViewInit, OnInit {
+  globalForm: FormGroup;
+
   selectableFrom: { displayText: string, value: number }[] = [];
-  maxQuantity: number = 0;  // Default to 1 or a sensible minimum
+
   constructor(private alertController: AlertController, private httpClient: HttpClient, private fb: FormBuilder) {
-    addIcons({ barcodeOutline });
+    addIcons({ barcodeOutline, search });
 
-    this.form = this.fb.group({
-      From: [null, [Validators.required, Validators.pattern('^[0-9]+$')]],
-      To: [null, [Validators.required, Validators.pattern('^[0-9]+$')]],
-      quantity: new FormControl(1, [Validators.required, Validators.min(1), Validators.max(0)])
+    this.globalForm = new FormGroup({
+      To: new FormControl(null)  // Control for the global destination select
     });
-
-
   }
   customPopoverOptions = {
     header: 'Mozzon',
@@ -38,7 +34,6 @@ export class HomePage implements AfterViewInit {
   };
   ngAfterViewInit() {
     this.prepare();
-    this.fetchDataFromApi();
     this.FetchWh();
     this.ProductUnitFetch();
   }
@@ -54,20 +49,26 @@ export class HomePage implements AfterViewInit {
   whList: any[] = [];
   ProductList: any[] = [];
   product: any;
+  scanResults: any[] = []; // Array to hold results from each scan
+  maxQuantity: number = 0;  // Default to 1 or a sensible minimum
+
+  ngOnInit() {
+    // Subscribe to changes in the global 'To' control
+    this.globalForm.get('To')?.valueChanges.subscribe(newToValue => {
+      // Update 'To' in all existing scan result forms
+      this.scanResults.forEach(item => {
+        item.form.get('To').setValue(newToValue, { emitEvent: false });
+      });
+    });
+  }
+
+
   prepare = () => {
     BarcodeScanner.prepare();
   };
 
 
-  onQuantityInput(event: CustomEvent) {
-    const inputValue = event.detail.value;
-    this.form.controls['quantity'].setValue(inputValue, { emitEvent: false });
-  }
 
-  onQuantityChange(event: CustomEvent) {
-    const rangeValue = event.detail.value;
-    this.form.controls['quantity'].setValue(rangeValue, { emitEvent: false });
-  }
   // To be deleted
   quantityOptions(): number[] {
     return Array.from({ length: this.maxQuantity }, (_, i) => i + 1);
@@ -104,36 +105,36 @@ export class HomePage implements AfterViewInit {
   }
 
 
-
   fetchDataFromApi() {
+    const apiUrl = this.result;  // Using the 'result' bound to the ion-input
+    if (!apiUrl) {
+      console.error('No URL provided for fetching data.');
+      return;
+    }
+
     const headers = new HttpHeaders({
       'Authorization': 'Token e60c85b3f42fdd2c3f4d9ecb394b99d532f312f1',
       'Content-Type': 'application/json'
     });
 
-    this.httpClient.get<any>(this.scannedresult, { headers }).subscribe(
+    this.httpClient.get<any>(apiUrl, { headers }).subscribe(
       data => {
-        this.apiData = data;
-        console.log('API Data:', data);
-        if (data) {
-          this.selectableFrom = [{
-            displayText: `${data.wh_name}: ${data.productunit_name}  الكمية:${data.quantity}`,
-            value: data.id
-          }];
-          this.scanResults.push(data); // Push each new scan result into the array
-          this.product = data.productunit_name;
-          this.maxQuantity = data.quantity; // Assume data.quantity is the maximum quantity allowed
-          // Update the form validators for quantity
-          this.form.controls['quantity'].setValidators([
-            Validators.required,
-            Validators.min(1),
-            Validators.max(this.maxQuantity) // Set the new maximum based on fetched data
-          ]);
-          this.form.controls['quantity'].updateValueAndValidity(); // Re-validate the form control
-          // Set default values if necessary
-          this.form.patchValue({
-            From: data.id,
-            quantity: Math.min(data.quantity, this.form.value.quantity) // Set to current or max if current exceeds new max
+        const existingEntry = this.scanResults.find(item => item.id === data.id);
+        if (existingEntry) {
+          // Update existing entry and its form
+          existingEntry.quantity = Math.min(existingEntry.quantity + 1, existingEntry.maxQuantity);
+          existingEntry.form.get('quantity').setValue(existingEntry.quantity);
+        } else {
+          // Push new data as a new entry with a new FormGroup
+          this.scanResults.push({
+            ...data,
+            quantity: 1,
+            maxQuantity: data.quantity,
+            form: new FormGroup({
+              From: new FormControl(data.id),
+              To: new FormControl(this.globalForm.get('To')?.value), // Added null check
+              quantity: new FormControl(1)
+            })
           });
         }
       },
@@ -143,34 +144,46 @@ export class HomePage implements AfterViewInit {
     );
   }
 
+  submitAllForms() {
+    this.scanResults.forEach(result => {
+      const formData = result.form.value;
+      console.log('Submitting:', formData);  // Logging the form data for debugging
 
-  submitForm() {
-    if (this.form.valid) {
-      console.log('Form Values:', this.form.value);
-      this.postApiData();
-    }
-  }
-
-
-  postApiData() {
-    if (this.form.valid) {
       const headers = new HttpHeaders({
         'Authorization': 'Token e60c85b3f42fdd2c3f4d9ecb394b99d532f312f1',
         'Content-Type': 'application/json'
       });
-      // Post the data
-      this.httpClient.post<any>("/api/transfers/", this.form.value, { headers }).subscribe(
-        data => {
-          console.log('API Data:', data);  // Successful POST operation
+
+      // Here you would actually post the data
+      this.httpClient.post<any>("/api/transfers/", formData, { headers }).subscribe(
+        response => {
+          console.log('Successful POST:', response);  // Successful POST operation
         },
         error => {
           console.error('Error posting data:', error);  // Error during POST operation
         }
       );
-    } else {
-      console.error('Form is not valid');  // Form validation failed
-    }
+    });
   }
+
+  reduce(item: any) {
+    // Find the item in the scanResults array
+    const product = this.scanResults.find(result => result.id === item.id);
+    if (product && product.quantity > 1) {
+      product.quantity--;
+    } else {
+      this.scanResults = this.scanResults.filter(result => result.id !== item.id);
+    }
+
+  }
+
+
+
+
+
+
+
+
   FetchWh() {
     const headers = new HttpHeaders({
       'Authorization': 'Token e60c85b3f42fdd2c3f4d9ecb394b99d532f312f1',

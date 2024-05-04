@@ -7,8 +7,19 @@
     </ion-header>
     <ion-content
       class="ion-padding"
-      [style.--background]="scanActive ? '#00000000':'#000000'"
-      >This is the menu content.
+      [style.--background]="scanActive ? '#00000000':'#ffffff'"
+    >
+      <form [formGroup]="globalForm">
+        <ion-select
+          formControlName="To"
+          interface="popover"
+          placeholder="أختر المخزون"
+        >
+          <ion-select-option *ngFor="let wh of whList" [value]="wh.id">
+            {{ wh.name }}
+          </ion-select-option>
+        </ion-select>
+      </form>
     </ion-content>
   </ion-menu>
   <div class="ion-page" id="main-content">
@@ -25,35 +36,37 @@
       class="page-content"
     >
       <div class="ion-text-center">
-        <ion-list>
-          <ion-item>
-            <ion-input
-              labelPlacement="stacked"
-              label="QR"
-              placeholder="QR id"
-              [value]="result"
-            >
-              <ion-icon
-                slot="start"
-                name="lock-closed"
-                aria-hidden="true"
-              ></ion-icon>
-              <ion-button
-                (click)="startScan()"
-                color="secondary"
-                fill="clear"
-                slot="end"
-                aria-label="Show/hide"
-              >
-                <ion-icon
-                  slot="icon-only"
-                  name="barcode-outline"
-                  aria-hidden="true"
-                ></ion-icon>
-              </ion-button>
-            </ion-input>
-          </ion-item>
-        </ion-list>
+        <ion-item>
+          <ion-input
+            labelPlacement="stacked"
+            label="QR"
+            placeholder="QR id"
+            [(ngModel)]="result"
+          >
+          </ion-input>
+          <ion-button
+            (click)="startScan()"
+            color="secondary"
+            fill="clear"
+            slot="end"
+            aria-label="Start scan"
+            class="scan-button"
+          >
+            <ion-icon
+              slot="icon-only"
+              name="barcode-outline"
+              aria-hidden="true"
+            ></ion-icon>
+          </ion-button>
+          <ion-button
+            (click)="fetchDataFromApi()"
+            color="secondary"
+            fill="clear"
+            class="fetch-button"
+          >
+            <ion-icon slot="icon-only" name="search"></ion-icon>
+          </ion-button>
+        </ion-item>
         <div class="card-container">
           <ion-card
             color="primary"
@@ -66,104 +79,30 @@
                 >أنشئ: {{ result.created_at }}</ion-card-subtitle
               >
             </ion-card-header>
-            <ion-card-content> الكمية: {{ result.quantity }} </ion-card-content>
+            <ion-card-content>
+              الكمية: {{ result.quantity }} / {{ result.maxQuantity }}
+              <ion-button fill="clear" (click)="reduce(result)"
+                >reduce</ion-button
+              >
+            </ion-card-content>
+            <form [formGroup]="result.form">
+              <input type="hidden" formControlName="From" />
+              <input type="hidden" formControlName="quantity" />
+            </form>
           </ion-card>
         </div>
       </div>
     </ion-content>
-    <div>
-      <!-- <form [formGroup]="form" (ngSubmit)="submitForm()" id="container">
-        <ion-item lines="none">
-          <ion-label position="floating">From</ion-label>
-          <ion-select
-            formControlName="From"
-            interface="popover"
-            placeholder="Select From"
-          >
-            <ion-select-option
-              *ngFor="let item of selectableFrom"
-              [value]="item.value"
-            >
-              {{ item.displayText }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-
-        Updated To field with ion-select
-        <ion-item lines="none">
-          <ion-label position="floating">To</ion-label>
-          <ion-select
-            formControlName="To"
-            interface="popover"
-            placeholder="Select Destination"
-          >
-            <ion-select-option *ngFor="let wh of whList" [value]="wh.id">
-              {{ wh.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-
-        Updated Quantity field with both ion-input and ion-range
-        <ion-item>
-          <ion-label position="floating">Quantity</ion-label>
-          <ion-input
-            type="number"
-            formControlName="quantity"
-            (ionChange)="onQuantityInput($event)"
-            [value]="form.get('quantity')?.value"
-            [max]="maxQuantity"
-          >
-          </ion-input>
-          <span class="max-quantity">Max: {{ maxQuantity }}</span>
-        </ion-item>
-
-        <ion-button
-          type="submit"
-          expand="full"
-          color="success"
-          [disabled]="!form.valid"
-        >
-          Submit
-        </ion-button>
-      </form> -->
+    <div class="submit-button-container">
+      <ion-button
+        type="submit"
+        expand="full"
+        color="success"
+        (click)="submitAllForms()"
+      >
+        Submit
+      </ion-button>
     </div>
-    <!-- <div>
-      <ion-list>
-        <ion-item>
-          <ion-label>إلى</ion-label>
-          <ion-select
-            [interfaceOptions]="customPopoverOptions"
-            interface="popover"
-            placeholder="أختر المخزون"
-          >
-            <ion-select-option *ngFor="let wh of whList" [value]="wh.id">
-              {{ wh.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-
-        <ion-item>
-          <ion-select
-            label="المنتجات"
-            [interfaceOptions]="customPopoverOptions"
-            interface="popover"
-            placeholder="أختر المنتج"
-          >
-            <ion-select-option *ngFor="let pr of ProductList" [value]="pr.id">
-              {{ pr.name }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-list>
-    </div> -->
-    <ion-button
-      type="submit"
-      expand="full"
-      color="success"
-      [disabled]="!form.valid"
-    >
-      Submit
-    </ion-button>
   </div>
 </ion-app>
 
