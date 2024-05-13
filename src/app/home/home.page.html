@@ -2,20 +2,18 @@
   <ion-menu contentId="main-content">
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>Menu Content</ion-title>
+        <ion-title>الإعدادات</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content
-      class="ion-padding"
-      [style.--background]="scanActive ? '#00000000':'#ffffff'"
-    >
+    <ion-content class="ion-padding">
       <form [formGroup]="globalForm">
         <ion-select
           formControlName="To"
           interface="popover"
-          placeholder="أختر المخزون"
+          placeholder="{{ DisplayTextTo }}"
+          (ionChange)="onWarehouseChangeTo($event)"
         >
-          <ion-select-option *ngFor="let wh of whList" [value]="wh.id">
+          <ion-select-option *ngFor="let wh of whList" [value]="wh">
             {{ wh.name }}
           </ion-select-option>
         </ion-select>
@@ -28,19 +26,61 @@
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>
         </ion-buttons>
-        <ion-title>Menu</ion-title>
+        <ion-title>ِApex Flow</ion-title>
       </ion-toolbar>
     </ion-header>
+
     <ion-content
-      [style.--background]="scanActive ? '#00000000':'#ffffff'"
+      [style.--background]="scanActive ? '#00000000' : 'none'"
       class="page-content"
     >
-      <div class="ion-text-center">
+      <div>
+        <form
+          [formGroup]="globalForm"
+          [hidden]="globalForm.get('To')?.value && globalForm.get('From')?.value"
+        >
+          <ion-item>
+            <ion-select
+              justify="end"
+              formControlName="From"
+              interface="popover"
+              placeholder="{{ DisplayTextFrom }}"
+              (ionChange)="onWarehouseChangeFrom($event)"
+            >
+              <ion-select-option *ngFor="let wh of whList" [value]="wh">
+                {{ wh.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </form>
+        <form
+          [formGroup]="globalForm"
+          [hidden]="globalForm.get('To')?.value && globalForm.get('From')?.value"
+        >
+          <ion-item>
+            <ion-select
+              justify="end"
+              formControlName="To"
+              interface="popover"
+              placeholder="{{ DisplayTextTo }}"
+              (ionChange)="onWarehouseChangeTo($event)"
+            >
+              <ion-select-option *ngFor="let wh of whList" [value]="wh">
+                {{ wh.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </form>
+      </div>
+      <div
+        class="ion-text-center"
+        [hidden]="!globalForm.get('To')?.value || !globalForm.get('From')?.value"
+      >
         <ion-item>
           <ion-input
             labelPlacement="stacked"
             label="QR"
-            placeholder="QR id"
+            placeholder="أمسح الكود أو أكتب رقم الكود هنا"
             [(ngModel)]="result"
           >
           </ion-input>
@@ -67,40 +107,34 @@
             <ion-icon slot="icon-only" name="search"></ion-icon>
           </ion-button>
         </ion-item>
-        <div class="card-container">
-          <ion-card
-            color="primary"
-            class="custom-card"
-            *ngFor="let result of scanResults"
-          >
-            <ion-card-header>
-              <ion-card-title>{{ result.productunit_name }}</ion-card-title>
-              <ion-card-subtitle
-                >أنشئ: {{ result.created_at }}</ion-card-subtitle
-              >
-            </ion-card-header>
-            <ion-card-content>
-              الكمية: {{ result.quantity }} / {{ result.maxQuantity }}
-              <ion-button fill="clear" (click)="reduce(result)"
-                >reduce</ion-button
-              >
-            </ion-card-content>
-            <form [formGroup]="result.form">
-              <input type="hidden" formControlName="From" />
-              <input type="hidden" formControlName="quantity" />
-            </form>
-          </ion-card>
-        </div>
+        <ion-list>
+          <ion-item *ngFor="let result of scanResults">
+            <ion-label class="ion-text-wrap">
+              <h2>{{ result.productunit_name }}</h2>
+              <h3>أنشئ: {{ result.created_at }}</h3>
+              <p>الكمية: {{ result.quantity }} / {{ result.maxQuantity }}</p>
+            </ion-label>
+            <ion-button
+              slot="end"
+              fill="clear"
+              color="danger"
+              (click)="reduce(result)"
+            >
+              <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
       </div>
     </ion-content>
-    <div class="submit-button-container">
+    <div>
       <ion-button
+        class="submit-button-container"
         type="submit"
-        expand="full"
+        expand="block"
         color="success"
-        (click)="submitAllForms()"
+        (click)="confirmSubmission()"
       >
-        Submit
+        تحويل الكميات
       </ion-button>
     </div>
   </div>
