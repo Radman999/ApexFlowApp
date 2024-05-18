@@ -42,39 +42,6 @@
   font-size: smaller; /* Make smaller than input text for subtlety */
 }
 
-ion-item {
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  border-bottom: 1px solid #ccc;
-}
-
-ion-item .item-label {
-  flex: 1;
-  margin-left: 8px;
-  font-size: 16px;
-}
-
-ion-item .item-input {
-  flex: 2;
-  margin-right: 8px;
-}
-
-ion-item .item-input input {
-  width: 100%;
-  font-size: 16px;
-  padding: 4px;
-  border: none;
-  border-radius: 4px;
-  background-color: #f5f5f5;
-}
-
-ion-item .item-input input:focus {
-  outline: none;
-  background-color: #fff;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-}
-
 #container {
   text-align: center;
   position: flex;
@@ -115,20 +82,21 @@ ion-item .item-input input:focus {
 }
 
 ion-card.custom-card {
-  display: flex;
+  display: abs;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100px;
-  height: 100px;
+  height: 150px;
   background-color: #9d3131;
   border-radius: 8px;
   margin-bottom: 16px;
 
   ion-card-title,
   ion-card-subtitle,
+  ion-button,
   ion-card-content {
-    font-size: 1px; // This sets the font size specifically for the text inside the card
+    font-size: 10px; // This sets the font size specifically for the text inside the card
   }
 }
 
@@ -143,4 +111,53 @@ ion-card.custom-card {
     flex: 0 1 calc(50% - 16px); // Sets each card to take up less than half the container width minus margin
     // Adjust 'calc(50% - 16px)' as needed to increase or decrease the number of cards per row
   }
+}
+ion-content {
+  /* Reduce the bottom padding to make space for the button */
+  padding-bottom: 50px; /* Adjust based on your button height */
+}
+.button-container {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  padding: 5px 10px; /* Adjust padding as needed */
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for better visibility */
+  background: white; /* Match the background to your app theme */
+  z-index: 100; /* Ensure it's above other content */
+}
+
+small {
+  width: 10;
+  height: 10;
+}
+
+.smaller-button {
+  --padding-start: 5px;
+  --padding-end: 5px;
+  --padding-top: 5px;
+  --padding-bottom: 5px;
+  font-size: 12px; /* Smaller font size */
+  height: 30px; /* Smaller button height */
+  min-height: 30px; /* Ensuring the button does not go below this height */
+}
+.submit-button-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px;
+  font-size: 20px;
+}
+
+.submit-button {
+  width: 100%;
+}
+
+.scan-button,
+.fetch-button {
+  margin: 0 5px; /* Adjust this value to increase or decrease padding */
+}
+.invert-colors {
+  filter: invert(1);
 }
