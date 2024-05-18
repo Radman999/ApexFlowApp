@@ -108,21 +108,32 @@
           </ion-button>
         </ion-item>
         <ion-list>
-          <ion-item *ngFor="let result of scanResults">
-            <ion-label class="ion-text-wrap">
-              <h2>{{ result.productunit_name }}</h2>
-              <h3>أنشئ: {{ result.created_at }}</h3>
-              <p>الكمية: {{ result.quantity }} / {{ result.maxQuantity }}</p>
-            </ion-label>
-            <ion-button
-              slot="end"
-              fill="clear"
-              color="danger"
-              (click)="reduce(result)"
-            >
-              <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
-            </ion-button>
-          </ion-item>
+          <ion-accordion-group>
+            <ion-accordion *ngFor="let item of scanResults">
+              <ion-item slot="header">
+                <ion-label class="ion-text-wrap">
+                  <h2>{{ item.productunit_name }}</h2>
+                  <h3>أنشئ: {{ item.created_at }}</h3>
+                  <p>الكمية: {{ item.quantity }} / {{ item.maxQuantity }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-list slot="content">
+                <ion-item *ngFor="let detail of item.details">
+                  <ion-label>
+                    ID: {{ detail.id }} - R_ID: {{ detail.random_id }}
+                  </ion-label>
+                  <ion-button
+                    slot="end"
+                    fill="clear"
+                    color="danger"
+                    (click)="reduce(detail)"
+                  >
+                    <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
+                  </ion-button>
+                </ion-item>
+              </ion-list>
+            </ion-accordion>
+          </ion-accordion-group>
         </ion-list>
       </div>
     </ion-content>
