@@ -1,6 +1,8 @@
+// src/main.ts
 import { enableProdMode } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 import { RouteReuseStrategy, provideRouter } from "@angular/router";
+import { provideHttpClient } from '@angular/common/http'; // Correctly import provideHttpClient
 import {
 	IonicRouteStrategy,
 	provideIonicAngular,
@@ -19,5 +21,6 @@ bootstrapApplication(AppComponent, {
 		{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
 		provideIonicAngular(),
 		provideRouter(routes),
+		provideHttpClient(), // Correctly use provideHttpClient
 	],
 });

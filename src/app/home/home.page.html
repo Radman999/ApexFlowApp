@@ -7,6 +7,21 @@
     </ion-header>
     <ion-content class="ion-padding">
       <form [formGroup]="globalForm">
+        <!-- Add a label and select for "From" -->
+        <ion-label position="stacked">من</ion-label>
+        <ion-select
+          formControlName="From"
+          interface="popover"
+          placeholder="{{ DisplayTextFrom }}"
+          (ionChange)="onWarehouseChangeFrom($event)"
+        >
+          <ion-select-option *ngFor="let wh of whList" [value]="wh">
+            {{ wh.name }}
+          </ion-select-option>
+        </ion-select>
+        
+        <!-- Add a label and select for "To" -->
+        <ion-label position="stacked">إلى</ion-label>
         <ion-select
           formControlName="To"
           interface="popover"
@@ -20,6 +35,7 @@
       </form>
     </ion-content>
   </ion-menu>
+
   <div class="ion-page" id="main-content">
     <ion-header>
       <ion-toolbar color="primary">
@@ -40,6 +56,8 @@
           [hidden]="globalForm.get('To')?.value && globalForm.get('From')?.value"
         >
           <ion-item>
+            <!-- Add a label for "From" -->
+            <ion-label position="stacked">من</ion-label>
             <ion-select
               justify="end"
               formControlName="From"
@@ -58,6 +76,8 @@
           [hidden]="globalForm.get('To')?.value && globalForm.get('From')?.value"
         >
           <ion-item>
+            <!-- Add a label for "To" -->
+            <ion-label position="stacked">إلى</ion-label>
             <ion-select
               justify="end"
               formControlName="To"
