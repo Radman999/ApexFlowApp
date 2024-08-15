@@ -1,11 +1,18 @@
-// src/app/pages/login/login.page.ts
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../auth.service';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonTitle,
+  IonToolbar
+} from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http'; // Ensure this is imported
 
 @Component({
   selector: 'app-login',
@@ -13,10 +20,16 @@ import { HttpClientModule } from '@angular/common/http'; // Ensure this is impor
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
-    IonicModule,
+    IonHeader,
     CommonModule,
     ReactiveFormsModule,
-    HttpClientModule // Import HttpClientModule for standalone components
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonButton,
   ]
 })
 export class LoginPage {
