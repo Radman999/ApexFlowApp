@@ -45,6 +45,7 @@ import {
   FormsModule,
   FormArray,
 } from '@angular/forms';
+import { environment } from '../../environments/environment';
 import { AuthService } from '../auth.service'; // Import AuthService
 
 @Component({
@@ -330,7 +331,7 @@ export class HomePage implements AfterViewInit {
 
     try {
       const data = await this.httpClient
-        .get<any>(`/api/ZPL/${trueId}/`, { headers })
+        .get<any>(`${environment.baseUrl}/api/ZPL/${trueId}/`, { headers })
         .toPromise();
       const selectedFromWarehouseCode =
         this.globalForm.get('From')?.value.Smacc_Code;
@@ -415,7 +416,7 @@ export class HomePage implements AfterViewInit {
 
     this.httpClient
       .post<any>(
-        '/api/Track/',
+        `${environment.baseUrl}/api/Track/`,
         { transfers: transfersWithoutRandomId },
         { headers },
       )
@@ -608,15 +609,17 @@ export class HomePage implements AfterViewInit {
       'Content-Type': 'application/json',
     });
 
-    this.httpClient.get<any[]>('/api/wh/', { headers }).subscribe(
-      (data) => {
-        this.whList = data;
-        console.log('Wh Data:', data);
-      },
-      (error) => {
-        console.error('Error fetching data:', error);
-      },
-    );
+    this.httpClient
+      .get<any[]>(`${environment.baseUrl}/api/wh/`, { headers })
+      .subscribe(
+        (data) => {
+          this.whList = data;
+          console.log('Wh Data:', data);
+        },
+        (error) => {
+          console.error('Error fetching data:', error);
+        },
+      );
   }
 
   fetchQr() {
@@ -631,15 +634,17 @@ export class HomePage implements AfterViewInit {
       'Content-Type': 'application/json',
     });
 
-    this.httpClient.get<any[]>('/api/QR/', { headers }).subscribe(
-      (data) => {
-        this.ProductList = data;
-        console.log('QR Data:', this.ProductList);
-      },
-      (error) => {
-        console.error('Error fetching data:', error);
-      },
-    );
+    this.httpClient
+      .get<any[]>(`${environment.baseUrl}/api/QR/`, { headers })
+      .subscribe(
+        (data) => {
+          this.ProductList = data;
+          console.log('QR Data:', this.ProductList);
+        },
+        (error) => {
+          console.error('Error fetching data:', error);
+        },
+      );
   }
 
   fetchZpl() {
@@ -654,14 +659,16 @@ export class HomePage implements AfterViewInit {
       'Content-Type': 'application/json',
     });
 
-    this.httpClient.get<any[]>('/api/ZPL/', { headers }).subscribe(
-      (data) => {
-        this.ZplList = data;
-        console.log('Zpl Data:', this.ZplList);
-      },
-      (error) => {
-        console.error('Error fetching Zpl data:', error);
-      },
-    );
+    this.httpClient
+      .get<any[]>(`${environment.baseUrl}/api/ZPL/`, { headers })
+      .subscribe(
+        (data) => {
+          this.ZplList = data;
+          console.log('Zpl Data:', this.ZplList);
+        },
+        (error) => {
+          console.error('Error fetching Zpl data:', error);
+        },
+      );
   }
 }

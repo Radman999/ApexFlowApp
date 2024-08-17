@@ -3,17 +3,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  private baseUrl = '/api'; // Adjust the base URL as necessary
-
   constructor(private http: HttpClient) {}
 
   login(username: string, password: string): Observable<any> {
-    const url = `${this.baseUrl}/api/auth-token/`;
+    const url = `${environment.baseUrl}/api/auth-token/`;
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
     return this.http.post(url, { username, password }, { headers }).pipe(
@@ -23,7 +22,7 @@ export class AuthService {
           localStorage.setItem('username', username);
         }
         return response;
-      })
+      }),
     );
   }
 
